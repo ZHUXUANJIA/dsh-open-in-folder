@@ -3,16 +3,27 @@
 > 让 Windows 资源管理器右键菜单里的「在 DeepSeek Harness 中打开」把任意文件夹作为
 > DSH 工作区打开——ZCode「在 ZCode 中打开」的 DSH 等价功能。
 
-本包是完整的 DSH 插件（Host 半边 + 客户端半边），由仓库根目录的 `install.ps1` 安装；
-普通用户请看仓库根目录 [`README.md`](../README.md)，本文件只记录插件自身的实现与排障。
+本包是完整的 DSH 插件（Host 半边 + 客户端半边）。可以在 DSH「设置 → 插件 → 添加插件」
+里输入包名 `dsh-open-in-folder` 或本仓库地址直接安装；也可以由仓库根目录的 `install.ps1`
+离线安装。普通用户请看仓库根目录 [`README.md`](../README.md)，本文件只记录插件自身的实现与排障。
+
+## 首次加载自动安装外壳集成
+
+通过插件管理器（npm / GitHub 地址）安装时，仓库根目录的 `package.json` 是安装入口；
+插件 Host 半边启动后会调用 `lib/shell-integration.js`，自动把启动器编译到
+`%DSH_HOME%\plugins\dsh-open-in-folder`、写 `app-path.txt`、注册 HKCU 右键菜单，
+并把结果写进 `events.log`（`shell-integration-ready` / `shell-integration-failed`）。
+已由 `install.ps1` 安装过的环境会被识别并跳过（`shell-integration-external`）。
+可用 `DSH_OPEN_IN_FOLDER_SKIP_SHELL_INTEGRATION=1` 关闭自动安装。
 
 ## 目录结构
 
 ```
-package.json        # dsh.bundle.patch + dsh.client 声明
-cordis.patch.yml    # bundle patch：把本插件插入 DSH profile 配置树
-lib/index.js        # Host 半边（Node / Cordis host）：HTTP 路由、队列、state.json、events.log
-lib/client.js       # 客户端半边（浏览器 bundle，window.__ModuleLoader__ 格式）
+package.json             # dsh.bundle.patch + dsh.client 声明
+cordis.patch.yml         # bundle patch：把本插件插入 DSH profile 配置树
+lib/index.js             # Host 半边（Node / Cordis host）：HTTP 路由、队列、state.json、events.log
+lib/client.js            # 客户端半边（浏览器 bundle，window.__ModuleLoader__ 格式）
+lib/shell-integration.js # 首次加载自动安装启动器 + 右键菜单
 ```
 
 ## 运行时接口（与 launcher 的契约见仓库根 `CONTRACT.md`）

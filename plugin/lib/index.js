@@ -19,6 +19,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import crypto from 'node:crypto'
+import { ensureShellIntegration } from './shell-integration.js'
 
 /** Cordis function-plugin 名字（在配置树里唯一即可）。 */
 export const name = 'open-in-folder'
@@ -29,8 +30,8 @@ export const inject = ['webServer']
 export const apply = applyPlugin
 export default { name, inject, apply: applyPlugin }
 
-/** 插件版本（state.json / health 里回报，便于排障）。 */
-const PLUGIN_VERSION = '0.1.0'
+/** 插件版本（state.json / health 里回报，便于排障；用于外壳集成自动重装判断）。 */
+const PLUGIN_VERSION = '0.2.0'
 /** 路由前缀。 */
 const ROUTE_BASE = '/dsh-open-in-folder'
 /** request 请求体上限。 */
@@ -244,6 +245,11 @@ function applyPlugin(ctx) {
     }
   }
   publishStateWithRetry(0)
+
+  // 插件管理器/ npm / GitHub 安装路径下，自动补齐 Windows 外壳集成：
+  // 复制启动器源码到稳定目录、编译 exe、写 app-path、注册 HKCU 右键菜单。
+  // 已由 install.ps1 安装过时这里只是幂等跳过；失败只记日志，不影响插件本身。
+  void ensureShellIntegration({ log, pluginVersion: PLUGIN_VERSION })
 
   // dispose：删除只属于本次进程的 state.json，并注销登记。
   ctx.effect(() => () => {

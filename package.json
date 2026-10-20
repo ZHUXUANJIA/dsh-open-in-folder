@@ -1,0 +1,56 @@
+{
+  "name": "dsh-open-in-folder",
+  "version": "0.2.0",
+  "description": "Windows Explorer 右键打开文件夹：把任意文件夹作为 DeepSeek Harness 工作区打开（ZCode 风格右键菜单）",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "windows",
+    "explorer",
+    "context-menu",
+    "workspace",
+    "right-click"
+  ],
+  "type": "module",
+  "main": "plugin/lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./plugin/lib/index.js"
+    },
+    "./client": {
+      "default": "./plugin/lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "plugin/package.json",
+    "plugin/cordis.patch.yml",
+    "plugin/README.md",
+    "plugin/lib",
+    "launcher/DSHOpenInFolder.cs",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./plugin/cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-workspace-controller",
+        "@deepseek-ai/dsh-client-ui-workspace"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZHUXUANJIA/dsh-open-in-folder.git"
+  },
+  "homepage": "https://github.com/ZHUXUANJIA/dsh-open-in-folder#readme",
+  "bugs": {
+    "url": "https://github.com/ZHUXUANJIA/dsh-open-in-folder/issues"
+  },
+  "license": "MIT"
+}

@@ -14,6 +14,7 @@
 ## 功能特性
 
 - **右键即开**：文件夹、文件夹内空白处、盘符根目录三处右键菜单。
+- **一键安装**：支持在 DSH「设置 → 插件 → 添加插件」里输入包名或 GitHub 地址直接安装；插件首次加载会自动装好右键菜单与启动器。
 - **自动前置**：DSH 没开就启动它；已经开着就把窗口调到最前。
 - **真正设置工作区**：不只是打开 DSH，而是创建/复用该文件夹的工作区，并打开其空白新会话。
 - **无需常驻后台**：没有额外的托盘进程，点击时才运行一个 ~18KB 的静默启动器。
@@ -32,28 +33,56 @@
 
 > 仅支持 **Windows 桌面版 + 本机 desktop profile**。WSL、远程 Web 部署、多人共用主机不在支持范围。
 
-## 快速安装
+## 安装（三种方式任选其一，不要混用）
 
-1. **下载本仓库**：`git clone https://github.com/ZHUXUANJIA/dsh-open-in-folder.git`，或在 GitHub 页面点 **Code → Download ZIP** 后解压。
-2. 进入仓库目录，运行：
+### 方式 A：DSH 插件管理器一键安装（推荐）
+
+打开 DeepSeek Harness → **设置 → 插件 → 添加插件**，在输入框里输入：
+
+```
+dsh-open-in-folder
+```
+
+点「安装」即可。安装后插件会进入当前 profile 的插件列表并默认启用；**首次加载时自动**：
+
+- 把启动器源码复制到 `%DSH_HOME%\plugins\dsh-open-in-folder` 并用 Windows 自带的 csc 编译 `DSHOpenInFolder.exe`；
+- 注册 `HKCU\Software\Classes` 下的三处右键菜单（文件夹 / 空白处 / 盘符）；
+- 写 `%DSH_HOME%\open-in-folder\app-path.txt` 与 `shell-integration.json` 标记。
+
+> 网络较慢时，对话框里的「安装源」可切到「中国大陆镜像源」（插件管理器默认会回退 npmmirror）。
+
+### 方式 B：GitHub 仓库地址安装（不需要 npm 账号）
+
+同样的「添加插件」对话框，粘贴本仓库地址：
+
+```
+https://github.com/ZHUXUANJIA/dsh-open-in-folder
+```
+
+> 需要本机装有 Git。插件管理器安装前会用 `git ls-remote` 做一次连通性检查（默认 5 秒超时）。
+
+### 方式 C：下载 ZIP / 本地安装脚本（离线、完整）
+
+1. 下载本仓库 ZIP，或 `git clone https://github.com/ZHUXUANJIA/dsh-open-in-folder.git` 并解压；
+2. 进入目录运行：
 
    ```powershell
    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
    ```
 
-   可选参数：
-   - `-AppExe "<DeepSeek Harness.exe 的绝对路径>"`：自动发现失败时显式指定；
-   - `-NoRegistry`：只装插件、不注册右键菜单（调试用）；
-   - `-NoLauncher`：跳过启动器编译（调试用）。
+   可选参数：`-AppExe "<DeepSeek Harness.exe 路径>"`（自动发现失败时）、`-NoRegistry`、`-NoLauncher`。
 
-3. 安装脚本会（幂等，可重复运行）：
-   - 把插件复制到 `%DSH_HOME%\plugins\dsh-open-in-folder`；
-   - 在 `%DSH_HOME%\profiles\desktop` 里登记插件并建立 `node_modules` junction；
-   - 用 Windows 自带 csc 编译启动器；
-   - 注册 `HKCU\Software\Classes` 下三处右键菜单；
-   - 提取 DSH 图标作为菜单图标。
-4. 安装通常**立即生效**（DSH 会热加载 profile 变更）。若未生效，请**完全退出 DSH**（窗口 + 系统托盘）后重新打开。
-5. 在资源管理器里右键任意文件夹，点 **「在 DeepSeek Harness 中打开」**。
+安装后通常**立即生效**（DSH 会热加载 profile 变更）；若未生效，请**完全退出 DSH**（窗口 + 系统托盘）后重新打开。
+然后在资源管理器里右键任意文件夹，点 **「在 DeepSeek Harness 中打开」**。
+
+### 关于「自动安装外壳集成」（方式 A/B 的说明）
+
+插件 Host 半边启动时会检查 `%DSH_HOME%\open-in-folder\shell-integration.json`：文件缺失或插件版本变化时，会自动补齐启动器 + 右键菜单。相关事件写在 `%DSH_HOME%\open-in-folder\events.log`（`shell-integration-ready` / `shell-integration-failed` / `shell-integration-external`）。
+
+- 需要 .NET Framework 4.x 的 `csc.exe`（Windows 通常自带）；缺失时自动安装会失败并记录日志，此时改用**方式 C** 手动安装即可。
+- 已用 `install.ps1` 安装过的机器会被识别为外部管理并跳过（`shell-integration-external`），不会重复安装。
+- 可用环境变量 `DSH_OPEN_IN_FOLDER_SKIP_SHELL_INTEGRATION=1` 关闭自动安装。
+- 自动安装只写当前用户的 `HKCU` 与 `%DSH_HOME%`，不联网、不需要管理员权限。
 
 > **Windows 11 提示**：本插件使用经典（legacy）右键菜单注册，与 ZCode 等工具的
 > 「在 ZCode 中打开」位置一致。如果主菜单里没看到，点 **「显示更多选项」**
@@ -64,12 +93,15 @@
 
 ## 卸载
 
+**方式 A/B（插件管理器安装）**：先在「设置 → 插件」里删除 `dsh-open-in-folder`，再运行一次本仓库的 `uninstall.ps1` 清理残留（右键菜单、`%DSH_HOME%\plugins` 安装目录、运行状态目录）：
+
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1
 ```
 
-- 只移除本插件在 profile 中的依赖/bundle 条目、junction、插件目录、三处右键菜单与运行状态目录；
-- **不会**影响你后来安装的其它 DSH 插件配置；
+**方式 C（install.ps1 安装）**：直接运行 `uninstall.ps1`。
+
+- 只移除本插件相关条目，**不会**影响你后来安装的其它 DSH 插件配置；
 - profile 备份 `package.json.bak-open-in-folder` 会保留，确认不需要可手动删除；
 - 加 `-KeepState` 可保留 `%DSH_HOME%\open-in-folder` 下的日志状态目录。
 
@@ -89,7 +121,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -OpenFolder
 
 | 文件 | 内容 |
 | --- | --- |
-| `%DSH_HOME%\open-in-folder\events.log` | 插件 Host 事件（`host-ready` / `request-queued` / `pending-claimed` / `ack`） |
+| `%DSH_HOME%\open-in-folder\events.log` | 插件 Host 事件（`host-ready` / `request-queued` / `pending-claimed` / `ack` / `shell-integration-*`） |
 | `%DSH_HOME%\open-in-folder\launcher.log` | 启动器事件与错误 |
 | `%DSH_HOME%\open-in-folder\state.json` | 当前 DSH Host 端口 / token / pid |
 
@@ -138,11 +170,13 @@ DSH 界面切换到该文件夹的工作区
 
 ```
 dsh-open-in-folder/
-├─ plugin/                     # DSH 插件（安装时复制到 %DSH_HOME%\plugins\dsh-open-in-folder）
-│  ├─ package.json             # dsh.bundle.patch + dsh.client 声明
+├─ package.json                # npm/GitHub 安装入口（dsh.bundle.patch + dsh.client 声明）
+├─ plugin/                     # DSH 插件（手动安装时复制到 %DSH_HOME%\plugins\dsh-open-in-folder）
+│  ├─ package.json             # 插件自身的 package.json（手动安装用）
 │  ├─ cordis.patch.yml         # bundle patch：把插件插入 profile 配置树
 │  ├─ lib/index.js             # Host 半边：health/request/pending/ack + state.json + events.log
 │  ├─ lib/client.js            # 客户端半边：轮询 → 创建工作区 → 打开工作区
+│  ├─ lib/shell-integration.js # 首次加载自动安装右键菜单/启动器（方式 A/B）
 │  └─ README.md                # 插件实现细节
 ├─ launcher/
 │  ├─ DSHOpenInFolder.cs       # 启动器源码（C# 5 / .NET Framework 4.x，WinExe）
@@ -202,8 +236,10 @@ right-click a folder → **Open in DeepSeek Harness** → DSH comes to front and
 that folder as a workspace (reusing the existing one when possible).
 
 Requirements: Windows 10/11, DeepSeek Harness desktop (tested with 0.2.1-rc.2),
-PowerShell 5.1. Install with `install.ps1`, uninstall with `uninstall.ps1`, self-check
-with `verify.ps1`. It does not modify the DSH installation (`app.asar`); it registers a
-profile plugin plus a tiny local launcher and HKCU context-menu entries. On Windows 11
-the item appears under **Show more options** (same as ZCode-style legacy entries).
-Licensed under MIT. Not affiliated with DeepSeek.
+PowerShell 5.1. Easiest install: DSH **Settings → Plugins → Add plugin** and enter
+`dsh-open-in-folder` (npm) or this repository URL; the plugin auto-installs its
+Windows launcher and context-menu entries on first load. Offline install with
+`install.ps1`, uninstall with `uninstall.ps1`, self-check with `verify.ps1`.
+It does not modify the DSH installation (`app.asar`).
+On Windows 11 the item appears under **Show more options** (same as ZCode-style
+legacy entries). Licensed under MIT. Not affiliated with DeepSeek.

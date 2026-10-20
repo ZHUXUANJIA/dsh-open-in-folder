@@ -615,6 +615,12 @@ function Assert-PluginSourcePreflight {
     if (-not [string]::IsNullOrWhiteSpace($clientFullPath)) {
         Invoke-NodeSyntaxCheck -NodePath $nodePath -ScriptPath $clientFullPath
     }
+    foreach ($extraScript in @('shell-integration.js')) {
+        $extraPath = Join-Path $PluginSourcePath ('lib\' + $extraScript)
+        if (Test-Path -LiteralPath $extraPath -PathType Leaf) {
+            Invoke-NodeSyntaxCheck -NodePath $nodePath -ScriptPath $extraPath
+        }
+    }
     Write-Ok '插件源预检通过（必需文件 / manifest / bundle patch / client bundle / JS 语法）'
 }
 
