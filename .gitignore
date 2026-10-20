@@ -1,0 +1,19 @@
+# 编译产物（install.ps1 会用 csc 现场编译，不入库）
+launcher/DSHOpenInFolder.exe
+launcher/prebuilt/
+*.exe
+
+# 编辑器 / IDE
+.vs/
+.vscode/
+*.user
+
+# 运行/调试产物
+*.log
+state.json
+package.json.bak-*
+package.json.broken-*
+
+# Windows 缩略图缓存
+Thumbs.db
+desktop.ini

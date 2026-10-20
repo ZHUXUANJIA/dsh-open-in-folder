@@ -1,0 +1,10 @@
+# 默认自动识别文本；PS1/CS 在 Windows 上保持 CRLF（与开发/测试环境一致）
+* text=auto
+*.ps1 text eol=crlf
+*.cs text eol=crlf
+*.md text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.exe binary
+*.png binary
+*.ico binary

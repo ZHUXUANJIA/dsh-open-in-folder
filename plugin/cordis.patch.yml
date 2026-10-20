@@ -1,0 +1,11 @@
+# dsh-open-in-folder —— DSH bundle patch
+#
+# 把插件挂进 DSH profile 的配置树。安装器只负责：
+#   1. 把本包放进 <DSH_HOME>\plugins\dsh-open-in-folder
+#   2. 在 profile 的 node_modules 里建一个指向它的 junction/目录
+#   3. 在 profile package.json 的 dsh.profile.bundles 里追加 "dsh-open-in-folder"
+# DSH 启动时按 bundle 层栈叠加各插件 patch，本文件把插件本体插入配置树。
+
+- insert:
+    - id: dsh-open-in-folder
+      name: dsh-open-in-folder
