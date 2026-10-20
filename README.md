@@ -49,6 +49,8 @@
    - 注册 `HKCU\Software\Classes` 下的三处右键菜单（文件夹 / 空白处 / 盘符）；
    - 写 `%DSH_HOME%\open-in-folder\app-path.txt` 与 `shell-integration.json` 标记。
 
+> **注意**：插件管理器把本地目录安装为 `link:` 依赖时，如果 DSH 正在运行，通常**需要完全退出 DSH 再重开一次**才会加载新插件（重启后自动生效，无需再做其它操作）。GitHub 地址 / npm 来源一般可以热加载。
+
 > 「添加插件」对话框也支持 **GitHub 仓库地址**和 **npm 包名**，见下方方式 B、C。
 
 ### 方式 B：GitHub 仓库地址安装
@@ -140,6 +142,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -OpenFolder
 | 现象 | 处理 |
 | --- | --- |
 | 右键没有菜单项 | 先点「显示更多选项」；`reg query "HKCU\Software\Classes\Directory\shell\DSH.OpenInFolder"` 确认注册；重跑 `install.ps1` |
+| 插件管理器装完没生效 | 本地目录（`link:`）安装通常需要**完全退出 DSH 再重开一次**；仍不行就看 `events.log` 有没有 `host-ready` / `shell-integration-*` |
 | 点击没反应或弹错误框 | 看 `launcher.log`；错误框里会带服务端返回的错误文本 |
 | 弹「插件未就绪」/ 打开后没切换 | 插件还没被当前 DSH 进程加载：完全退出 DSH 后重开；或看 `events.log` 是否有 `host-ready` |
 | 有 `request-queued` 但没打开 | 看 `events.log` 是否有 `pending-claimed`：没有 = 客户端半边未加载（重启 DSH）；有 `ack error` 看 message |
