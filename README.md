@@ -14,7 +14,7 @@
 ## 功能特性
 
 - **右键即开**：文件夹、文件夹内空白处、盘符根目录三处右键菜单。
-- **一键安装**：支持在 DSH「设置 → 插件 → 添加插件」里输入包名或 GitHub 地址直接安装；插件首次加载会自动装好右键菜单与启动器。
+- **一键安装**：支持在 DSH「设置 → 插件 → 添加插件」里粘贴本地目录或 GitHub 仓库地址直接安装；插件首次加载会自动装好右键菜单与启动器。
 - **自动前置**：DSH 没开就启动它；已经开着就把窗口调到最前。
 - **真正设置工作区**：不只是打开 DSH，而是创建/复用该文件夹的工作区，并打开其空白新会话。
 - **无需常驻后台**：没有额外的托盘进程，点击时才运行一个 ~18KB 的静默启动器。
@@ -35,23 +35,23 @@
 
 ## 安装（三种方式任选其一，不要混用）
 
-### 方式 A：DSH 插件管理器一键安装（推荐）
+### 方式 A：DSH 插件管理器 + 本地目录（推荐，无需 npm / 无需 GitHub 网络）
 
-打开 DeepSeek Harness → **设置 → 插件 → 添加插件**，在输入框里输入：
+1. 在本页点 **Code → Download ZIP** 下载并解压到**固定位置**（例如 `D:\Tools\dsh-open-in-folder`，之后不要删除或移动它）；
+2. 打开 DeepSeek Harness → **设置 → 插件 → 添加插件**，在输入框里粘贴**解压后的文件夹路径**：
 
-```
-dsh-open-in-folder
-```
+   ```
+   D:\Tools\dsh-open-in-folder
+   ```
 
-点「安装」即可。安装后插件会进入当前 profile 的插件列表并默认启用；**首次加载时自动**：
+3. 点「安装」。安装后插件会进入当前 profile 的插件列表并默认启用；**首次加载时自动**：
+   - 把启动器源码复制到 `%DSH_HOME%\plugins\dsh-open-in-folder` 并用 Windows 自带的 csc 编译 `DSHOpenInFolder.exe`；
+   - 注册 `HKCU\Software\Classes` 下的三处右键菜单（文件夹 / 空白处 / 盘符）；
+   - 写 `%DSH_HOME%\open-in-folder\app-path.txt` 与 `shell-integration.json` 标记。
 
-- 把启动器源码复制到 `%DSH_HOME%\plugins\dsh-open-in-folder` 并用 Windows 自带的 csc 编译 `DSHOpenInFolder.exe`；
-- 注册 `HKCU\Software\Classes` 下的三处右键菜单（文件夹 / 空白处 / 盘符）；
-- 写 `%DSH_HOME%\open-in-folder\app-path.txt` 与 `shell-integration.json` 标记。
+> 「添加插件」对话框也支持 **GitHub 仓库地址**和 **npm 包名**，见下方方式 B、C。
 
-> 网络较慢时，对话框里的「安装源」可切到「中国大陆镜像源」（插件管理器默认会回退 npmmirror）。
-
-### 方式 B：GitHub 仓库地址安装（不需要 npm 账号）
+### 方式 B：GitHub 仓库地址安装
 
 同样的「添加插件」对话框，粘贴本仓库地址：
 
@@ -59,9 +59,21 @@ dsh-open-in-folder
 https://github.com/ZHUXUANJIA/dsh-open-in-folder
 ```
 
-> 需要本机装有 Git。插件管理器安装前会用 `git ls-remote` 做一次连通性检查（默认 5 秒超时）。
+> 需要本机装有 Git，且 DSH 进程能访问 GitHub（插件管理器安装前会用 `git ls-remote` 做一次连通性检查，默认 5 秒超时）。
+> 如果 GitHub 访问不稳定：可以给 DSH 设置代理环境变量（`HTTPS_PROXY` / `HTTP_PROXY`，例如 `http://127.0.0.1:7897`）后重启 DSH 再装，或改用方式 A / 方式 D。
 
-### 方式 C：下载 ZIP / 本地安装脚本（离线、完整）
+### 方式 C：npm 包名安装
+
+本插件已按 npm 包格式发布在本仓库根目录（`package.json`），但目前**尚未发布到 npm registry**。
+发布后可在「添加插件」里直接输入包名：
+
+```
+dsh-open-in-folder
+```
+
+（如果你希望我把它发布到 npm，需要先注册/登录一个 npm 账号，见 issue 讨论。）
+
+### 方式 D：下载 ZIP / 运行安装脚本（完全离线，等价于方式 A）
 
 1. 下载本仓库 ZIP，或 `git clone https://github.com/ZHUXUANJIA/dsh-open-in-folder.git` 并解压；
 2. 进入目录运行：
@@ -79,7 +91,7 @@ https://github.com/ZHUXUANJIA/dsh-open-in-folder
 
 插件 Host 半边启动时会检查 `%DSH_HOME%\open-in-folder\shell-integration.json`：文件缺失或插件版本变化时，会自动补齐启动器 + 右键菜单。相关事件写在 `%DSH_HOME%\open-in-folder\events.log`（`shell-integration-ready` / `shell-integration-failed` / `shell-integration-external`）。
 
-- 需要 .NET Framework 4.x 的 `csc.exe`（Windows 通常自带）；缺失时自动安装会失败并记录日志，此时改用**方式 C** 手动安装即可。
+- 需要 .NET Framework 4.x 的 `csc.exe`（Windows 通常自带）；缺失时自动安装会失败并记录日志，此时改用**方式 D** 手动安装即可。
 - 已用 `install.ps1` 安装过的机器会被识别为外部管理并跳过（`shell-integration-external`），不会重复安装。
 - 可用环境变量 `DSH_OPEN_IN_FOLDER_SKIP_SHELL_INTEGRATION=1` 关闭自动安装。
 - 自动安装只写当前用户的 `HKCU` 与 `%DSH_HOME%`，不联网、不需要管理员权限。
@@ -93,13 +105,13 @@ https://github.com/ZHUXUANJIA/dsh-open-in-folder
 
 ## 卸载
 
-**方式 A/B（插件管理器安装）**：先在「设置 → 插件」里删除 `dsh-open-in-folder`，再运行一次本仓库的 `uninstall.ps1` 清理残留（右键菜单、`%DSH_HOME%\plugins` 安装目录、运行状态目录）：
+**方式 A/B/C（插件管理器安装）**：先在「设置 → 插件」里删除 `dsh-open-in-folder`，再运行一次本仓库的 `uninstall.ps1` 清理残留（右键菜单、`%DSH_HOME%\plugins` 安装目录、运行状态目录）：
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1
 ```
 
-**方式 C（install.ps1 安装）**：直接运行 `uninstall.ps1`。
+**方式 D（install.ps1 安装）**：直接运行 `uninstall.ps1`。
 
 - 只移除本插件相关条目，**不会**影响你后来安装的其它 DSH 插件配置；
 - profile 备份 `package.json.bak-open-in-folder` 会保留，确认不需要可手动删除；
@@ -236,9 +248,9 @@ right-click a folder → **Open in DeepSeek Harness** → DSH comes to front and
 that folder as a workspace (reusing the existing one when possible).
 
 Requirements: Windows 10/11, DeepSeek Harness desktop (tested with 0.2.1-rc.2),
-PowerShell 5.1. Easiest install: DSH **Settings → Plugins → Add plugin** and enter
-`dsh-open-in-folder` (npm) or this repository URL; the plugin auto-installs its
-Windows launcher and context-menu entries on first load. Offline install with
+PowerShell 5.1. Easiest install: **Settings → Plugins → Add plugin** and paste either
+the extracted repository folder path or this repository URL; the plugin auto-installs
+its Windows launcher and context-menu entries on first load. Offline install with
 `install.ps1`, uninstall with `uninstall.ps1`, self-check with `verify.ps1`.
 It does not modify the DSH installation (`app.asar`).
 On Windows 11 the item appears under **Show more options** (same as ZCode-style
